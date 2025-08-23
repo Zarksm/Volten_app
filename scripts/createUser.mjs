@@ -1,5 +1,4 @@
-import 'dotenv/config';
-
+import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { createClient } from "@supabase/supabase-js";
 
@@ -13,38 +12,64 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const userData = {
-  nama: "Fathul",
-  username: "Fathul",
-  email: "fathul@gmail.com",
-  password: "volten123",
-  role: "user",
-  divisi: "PJT",
-};
+const usersData = [
+  {
+    nama: "Nabila Alya",
+    username: "nabila",
+    email: "nabila@gmail.com",
+    password: "volten123",
+    role: "user",
+    divisi: "Fin, Acc, Tax & HR",
+  },
+  {
+    nama: "Sheila Indah",
+    username: "sheila",
+    email: "sheila@gmail.com",
+    password: "volten123",
+    role: "user",
+    divisi: "GA & WH",
+  },
+  {
+    nama: "Fathul",
+    username: "fathul",
+    email: "fathul@gmail.com",
+    password: "volten123",
+    role: "user",
+    divisi: "PJT",
+  },
+  {
+    nama: "Admin",
+    username: "Super Admin",
+    email: "admin@gmail.com",
+    password: "volten123",
+    role: "admin",
+    divisi: "Admin",
+  },
+];
 
-async function createUser() {
+async function createUsers() {
   try {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    for (const user of usersData) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
 
-    const { error } = await supabase
-      .from("users")
-      .insert({
-        nama: userData.nama,
-        username: userData.username,
-        email: userData.email,
+      const { error } = await supabase.from("users").insert({
+        nama: user.nama,
+        username: user.username,
+        email: user.email,
         password: hashedPassword,
-        role: userData.role,
-        divisi: userData.divisi,
+        role: user.role,
+        divisi: user.divisi,
       });
 
-    if (error) {
-      console.error("❌ Gagal membuat user:", error.message);
-    } else {
-      console.log(`✅ User ${userData.email} berhasil dibuat`);
+      if (error) {
+        console.error(`❌ Gagal membuat user ${user.email}:`, error.message);
+      } else {
+        console.log(`✅ User ${user.email} berhasil dibuat`);
+      }
     }
   } catch (err) {
     console.error("❌ Terjadi error:", err.message);
   }
 }
 
-createUser();
+createUsers();

@@ -34,7 +34,7 @@ export default function LoginPage() {
 
       // Paksa reload ke server supaya middleware jalan
       if (res.ok) {
-        window.location.assign("/dashboard"); // reload page → middleware jalan
+        window.location.assign("/"); // reload page → middleware jalan
       }
     } catch (err) {
       setError("Something went wrong");

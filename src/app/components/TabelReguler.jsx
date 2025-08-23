@@ -58,6 +58,11 @@ const TabelReguler = ({ data }) => {
     setOpen(false);
   };
 
+  function capitalize(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
+
   return (
     <>
       {/* TABEL */}
@@ -73,8 +78,7 @@ const TabelReguler = ({ data }) => {
             <TableHead>Status</TableHead>
             <TableHead>Remark</TableHead>
             <TableHead>Attachment</TableHead>
-            <TableHead>No TPS</TableHead>
-            <TableHead>Case</TableHead>
+
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -85,15 +89,23 @@ const TabelReguler = ({ data }) => {
               <TableCell>{item.tanggal}</TableCell>
               <TableCell>{item.instruction_date}</TableCell>
               <TableCell>{item.description}</TableCell>
-              <TableCell>{item.priority}</TableCell>
-              <TableCell>{item.estDurasi}</TableCell>
+              <TableCell
+                className={
+                  item.priority?.toLowerCase() === "urgent important"
+                    ? "text-red-500 font-semibold"
+                    : item.priority?.toLowerCase() === "urgent"
+                    ? "text-yellow-500 font-semibold"
+                    : "text-green-500 font-semibold"
+                }
+              >
+                {capitalize(item.priority)}
+              </TableCell>
+              <TableCell>{item.est_durasi}</TableCell>
               <TableCell>{item.status}</TableCell>
               <TableCell>{item.remark}</TableCell>
               <TableCell>
                 {item.attachment?.name || item.attachment || "—"}
               </TableCell>
-              <TableCell>{item.no_tps}</TableCell>
-              <TableCell>{item.case_code}</TableCell>
               <TableCell className="flex gap-2">
                 <div
                   className="cursor-pointer text-lg"

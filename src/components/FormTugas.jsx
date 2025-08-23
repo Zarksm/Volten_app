@@ -107,8 +107,6 @@ const FormTugas = ({ onSubmit }) => {
       status: "Open",
       remark: "",
       attachment: null,
-      noTps: "",
-      case: "",
       divisi: "",
     });
   };
@@ -166,9 +164,11 @@ const FormTugas = ({ onSubmit }) => {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Priority</SelectLabel>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="Urgent">Urgent</SelectItem>
+                <SelectItem value="Urgent Important">
+                  Urgent Important
+                </SelectItem>
+                <SelectItem value="Reguler">Reguler</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -237,14 +237,15 @@ const FormTugas = ({ onSubmit }) => {
 
         {/* Remark */}
         <div className="space-y-2">
-          <Label htmlFor="remark">Remark (opsional)</Label>
+          <Label htmlFor="remark">Remark</Label>
           <Textarea
             id="remark"
             name="remark"
             value={form.remark}
             onChange={handleChange}
-            placeholder="Masukkan remark"
-            className="!shadow-none"
+            placeholder=""
+            className="!shadow-none bg-gray-100 cursor-not-allowed"
+            disabled // ✅ Field remark nonaktif
           />
         </div>
 
@@ -258,33 +259,6 @@ const FormTugas = ({ onSubmit }) => {
             onChange={handleChange}
             className="!shadow-none"
           />
-        </div>
-
-        {/* No TPS & Case */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="noTps">No TPS</Label>
-            <Input
-              id="noTps"
-              name="noTps"
-              value={form.noTps}
-              onChange={handleChange}
-              placeholder="Masukkan nomor TPS"
-              className="!shadow-none"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="case">Case</Label>
-            <Input
-              id="case"
-              name="case"
-              value={form.case}
-              onChange={handleChange}
-              placeholder="Masukkan case code"
-              className="!shadow-none"
-            />
-          </div>
         </div>
 
         {/* Submit Button */}

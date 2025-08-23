@@ -25,8 +25,6 @@ export async function POST(req) {
         status: body.status,
         remark: body.remark,
         attachment: body.attachment || null,
-        no_tps: body.noTps,
-        case_code: body.case,
         created_by: user.id,   // ✅ langsung dari JWT
         divisi: user.divisi,   // ✅ langsung dari JWT
       },

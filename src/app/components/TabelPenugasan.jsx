@@ -17,6 +17,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { FaRegEdit } from "react-icons/fa";
+import { MdDeleteOutline } from "react-icons/md";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,6 +29,10 @@ const TabelPenugasan = ({ data }) => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
+  function capitalize(text) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
   return (
     <div className="w-full text-xs">
       {/* TABLE */}
@@ -42,8 +48,7 @@ const TabelPenugasan = ({ data }) => {
             <TableHead>Status</TableHead>
             <TableHead>Remark</TableHead>
             <TableHead>Attachment</TableHead>
-            <TableHead>No TPS</TableHead>
-            <TableHead>Case</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,21 +63,30 @@ const TabelPenugasan = ({ data }) => {
               <TableCell>{item.description}</TableCell>
               <TableCell
                 className={
-                  item.priority?.toLowerCase() === "high"
+                  item.priority?.toLowerCase() === "urgent important"
                     ? "text-red-500 font-semibold"
-                    : item.priority?.toLowerCase() === "medium"
+                    : item.priority?.toLowerCase() === "urgent"
                     ? "text-yellow-500 font-semibold"
                     : "text-green-500 font-semibold"
                 }
               >
-                {item.priority}
+                {capitalize(item.priority)}
               </TableCell>
               <TableCell>{item.est_durasi}</TableCell>
               <TableCell>{item.status}</TableCell>
               <TableCell>{item.remark}</TableCell>
               <TableCell>{item.attachment || "—"}</TableCell>
-              <TableCell>{item.no_tps}</TableCell>
-              <TableCell>{item.case_code}</TableCell>
+              <TableCell className="flex gap-2">
+                <div
+                  className="cursor-pointer text-lg"
+                  onClick={() => handleEdit(item)}
+                >
+                  <FaRegEdit />
+                </div>
+                <div className="cursor-pointer text-xl">
+                  <MdDeleteOutline />
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

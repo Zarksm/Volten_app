@@ -1,5 +1,19 @@
 import { redirect } from "next/navigation";
+import { getUserFromCookie } from "@/lib/getUserFromCookie";
 
-export default function Home() {
-  redirect("/dashboard");
+export default async function Home() {
+  const user = await getUserFromCookie();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const role = user.role?.toLowerCase();
+
+  console.log("role", role);
+  if (role === "user") {
+    redirect("/dashboard/penugasan");
+  } else {
+    redirect("/dashboard");
+  }
 }

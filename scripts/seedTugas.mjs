@@ -9,7 +9,7 @@ const supabase = createClient(
 );
 
 const jenisList = ["Penugasan", "Rutinan", "Reguler"];
-const priorityList = ["High", "Medium", "Low"];
+const priorityList = ["Urgent Important", "Urgent", "Reguler"];
 const statusList = ["Open", "In Progress", "Closed"];
 const divisiList = ["IT", "Operasional", "Fasilitas"];
 
@@ -32,8 +32,6 @@ function generateDummy() {
         status: statusList[i % statusList.length],
         remark: `Remark ${i + 1}`,
         attachment: null,
-        no_tps: `TPS-${i + 1}`,
-        case_code: `CASE-${counter}`,
         created_by: "21380985-3e6a-42ba-b248-0c0293f1432c",
         divisi: "PJT",
       });

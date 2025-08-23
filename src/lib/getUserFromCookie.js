@@ -24,6 +24,7 @@
 
 
 // lib/getUserFromCookie.js
+
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
@@ -41,6 +42,7 @@ export async function getUserFromCookie() {
       new TextEncoder().encode(process.env.JWT_SECRET)
     );
 
+    console.log("DEBUG JWT Payload:", payload);
     return payload; // { id, nama, divisi, email, role, ... }
   } catch (err) {
     console.error("JWT verify failed:", err);
