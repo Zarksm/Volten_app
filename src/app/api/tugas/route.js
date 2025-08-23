@@ -23,7 +23,7 @@ export async function POST(req) {
         description: body.description,
         est_durasi: body.estDurasi,
         status: body.status,
-        remark: body.remark,
+        remark: body.remark || null,
         attachment: body.attachment || null,
         created_by: user.id,   // ✅ langsung dari JWT
         divisi: user.divisi,   // ✅ langsung dari JWT

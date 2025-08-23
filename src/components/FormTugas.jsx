@@ -29,8 +29,6 @@ const FormTugas = ({ onSubmit }) => {
     status: "Open",
     remark: "",
     attachment: null,
-    noTps: "",
-    case: "",
   });
 
   const [errors, setErrors] = useState({});
