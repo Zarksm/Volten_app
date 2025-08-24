@@ -1,80 +1,117 @@
+
 // import { NextResponse } from "next/server";
 // import { jwtVerify } from "jose";
 
 // export async function middleware(req) {
 //   const token = req.cookies.get("token")?.value;
+//   let role = null;
 
-//   const protectedRoutes = ["/dashboard", "/tugas", "/admin"];
-
-//   if (protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))) {
-//     if (!token) return NextResponse.redirect(new URL("/login", req.url));
-
+//   if (token) {
 //     try {
-//       await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET));
-//     } catch {
+//       const { payload } = await jwtVerify(
+//         token,
+//         new TextEncoder().encode(process.env.JWT_SECRET)
+//       );
+//       console.log("JWT payload:", payload); // cek log di terminal
+//       role = payload.role; // pastiin disini bener key nya
+//     } catch (err) {
+//       console.error("JWT verify failed:", err);
 //       return NextResponse.redirect(new URL("/login", req.url));
 //     }
 //   }
 
-//   // Redirect user ke dashboard kalau buka login tapi sudah login
-//   if (req.nextUrl.pathname === "/login" && token) {
-//     try {
-//       await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET));
+//   // Redirect dari root `/`
+//   if (req.nextUrl.pathname === "/") {
+//     if (!role) {
+//       return NextResponse.redirect(new URL("/login", req.url));
+//     }
+//     if (role === "user") {
+//       return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
+//     }
 //       return NextResponse.redirect(new URL("/dashboard", req.url));
-//     } catch {}
+
+//   }
+
+//   if (req.nextUrl.pathname === "/login" && role) {
+//     if (role === "user") {
+//       return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
+//     }
+//     return NextResponse.redirect(new URL("/dashboard", req.url));
+
 //   }
 
 //   return NextResponse.next();
 // }
 
 // export const config = {
-//   matcher: ["/login", "/dashboard/:path*", "/tugas/:path*", "/admin/:path*"],
+//   matcher: ["/", "/login", "/dashboard/:path*", "/tugas/:path*", "/admin/:path*"],
 // };
 
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 export async function middleware(req) {
-  const token = req.cookies.get("token")?.value;
-  let role = null;
+  const { pathname } = req.nextUrl;
 
-  if (token) {
+  // kalau lagi di /login → biarin lewat, jangan redirect loop
+  if (pathname === "/login") {
+    const token = req.cookies.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.next(); // biar bisa buka login page
+    }
+
+    // kalau udah login, tendang ke dashboard sesuai role
     try {
       const { payload } = await jwtVerify(
         token,
         new TextEncoder().encode(process.env.JWT_SECRET)
       );
-      console.log("JWT payload:", payload); // cek log di terminal
-      role = payload.role; // pastiin disini bener key nya
+      if (payload.role === "user") {
+        return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
+      }
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     } catch (err) {
       console.error("JWT verify failed:", err);
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.next(); // token invalid → tetap bisa login
     }
   }
 
-  // Redirect dari root `/`
-  if (req.nextUrl.pathname === "/") {
-    if (!role) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-    if (role === "user") {
-      return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
-    }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-
+  // --- selain /login, wajib ada token ---
+  const token = req.cookies.get("token")?.value;
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (req.nextUrl.pathname === "/login" && role) {
+  let role = null;
+  try {
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(process.env.JWT_SECRET)
+    );
+    role = payload.role;
+  } catch (err) {
+    console.error("JWT verify failed:", err);
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  // kalau akses root
+  if (pathname === "/") {
     if (role === "user") {
       return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
     }
     return NextResponse.redirect(new URL("/dashboard", req.url));
-
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/login", "/dashboard/:path*", "/tugas/:path*", "/admin/:path*"],
+  matcher: [
+    "/",
+    "/login",
+    "/dashboard/:path*",
+    "/tugas/:path*",
+    "/admin/:path*",
+  ],
 };
