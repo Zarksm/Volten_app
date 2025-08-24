@@ -72,7 +72,7 @@ const Dashboard = () => {
       try {
         const res = await fetch("/api/me");
         const data = await res.json();
-        setUser(data.user); // pastikan response { user: {...} }
+        setUser(data.user); 
       } catch (err) {
         console.error("Gagal fetch user:", err);
       }
