@@ -175,7 +175,7 @@ const Sidebar = () => {
       {/* Sidebar List */}
       <nav className="space-y-1">
         <div className="w-full cursor-pointer flex mb-5">
-          {user.role === "user" && user.role === "branch" && (
+          {(user.role === "user" || user.role === "branch") && (
             <ButtonTugas isCollapsed={isCollapsed} />
           )}
         </div>
