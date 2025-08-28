@@ -44,7 +44,7 @@ export async function POST(req) {
   return NextResponse.json(data, { status: 201 });
 }
 
-// ✅ Ambil data
+
 
 export async function GET(req) {
   try {
@@ -52,6 +52,10 @@ export async function GET(req) {
     const sortField = searchParams.get("sortField") || "tanggal";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const createdBy = searchParams.get("created_by")?.toLowerCase() || "";
+    const page = parseInt(searchParams.get("page") || "1", 5);
+    const limit = parseInt(searchParams.get("limit") || "5", 5);
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     let query = supabase
       .from("tugas")
@@ -71,11 +75,13 @@ export async function GET(req) {
         divisi,
         created_by,
         created_user:tugas_created_by_fkey (id, nama)
-      `
+      `,
+        { count: "exact" } // 🔥 dapet total count
       )
-      .order(sortField, { ascending: sortOrder === "asc" });
+      .order(sortField, { ascending: sortOrder === "asc" })
+      .range(from, to);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw error;
 
     // filter manual by nama
@@ -86,9 +92,62 @@ export async function GET(req) {
       );
     }
 
-    return NextResponse.json(filtered);
+    return NextResponse.json({ data: filtered, total: count });
   } catch (err) {
     console.error("❌ API Error:", err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+
+export async function PATCH(req) {
+  try {
+    const formData = await req.formData(); // ✅ ganti ini
+
+    const id = formData.get("id");
+    const est_durasi = formData.get("est_durasi");
+    const remark = formData.get("remark");
+    const status = formData.get("status");
+    const file = formData.get("attachment"); // kalau ada file
+
+    if (!id) {
+      return NextResponse.json({ error: "ID wajib ada" }, { status: 400 });
+    }
+
+    let attachmentUrl = null;
+    if (file && typeof file === "object") {
+      const fileName = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("attachments") // pastikan nama bucket sama persis
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrl } = supabase.storage
+        .from("attachments")
+        .getPublicUrl(fileName);
+
+      attachmentUrl = publicUrl.publicUrl;
+    }
+
+    const { data, error } = await supabase
+      .from("tugas")
+      .update({
+        ...(est_durasi ? { est_durasi } : {}),
+        ...(remark ? { remark } : {}),
+        ...(status ? { status } : {}),
+        ...(attachmentUrl ? { attachment: attachmentUrl } : {}),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("❌ PATCH Error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
