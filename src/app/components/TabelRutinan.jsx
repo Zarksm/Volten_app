@@ -72,6 +72,7 @@ const TabelRutinan = ({ data }) => {
             <TableHead>Tanggal</TableHead>
             <TableHead>Instruction Date</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Divisi</TableHead>
             <TableHead>Priority</TableHead>
             <TableHead>Est Durasi</TableHead>
             <TableHead>Status</TableHead>
@@ -87,6 +88,7 @@ const TabelRutinan = ({ data }) => {
               <TableCell>{item.tanggal}</TableCell>
               <TableCell>{item.instruction_date}</TableCell>
               <TableCell>{item.description}</TableCell>
+              <TableCell>{item.divisi_branch}</TableCell>
               <TableCell
                 className={
                   item.priority?.toLowerCase() === "urgent important"
@@ -98,7 +100,7 @@ const TabelRutinan = ({ data }) => {
               >
                 {capitalize(item.priority)}
               </TableCell>
-              <TableCell>{item.estDurasi}</TableCell>
+              <TableCell>{item.est_durasi}</TableCell>
               <TableCell>{item.status}</TableCell>
               <TableCell>{item.remark}</TableCell>
               <TableCell>

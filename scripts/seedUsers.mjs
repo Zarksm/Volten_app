@@ -13,45 +13,16 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// cabang + divisi
-const branches = ["Pekanbaru", "Yogyakarta", "Bandung", "Makassar"];
-const divisions = ["CS", "Cleaning Servis", "WH"];
-
-// contoh user per divisi per branch
-const generateUsers = async () => {
-  const users = [];
-
-  // ambil branch dari DB supaya dapet ID-nya
-  const { data: branchData, error: branchError } = await supabase
-    .from("branch")
-    .select("id, nama_branch");
-
-  if (branchError) {
-    console.error("❌ Error fetch branch:", branchError.message);
-    process.exit(1);
-  }
-
-  for (const branch of branchData) {
-    for (const divisi of divisions) {
-      users.push({
-        nama: `${divisi} ${branch.nama_branch}`,
-        username: `${divisi.toLowerCase()}_${branch.nama_branch.toLowerCase()}`,
-        email: `${divisi.toLowerCase()}_${branch.nama_branch.toLowerCase()}@example.com`,
-        password: "volten123",
-        role: "branch",
-        divisi,
-        branch_id: branch.id,
-      });
-    }
-  }
-
-  return users;
-};
+// daftar user fix
+const users = [
+  { nama: "Hadi Smay", username: "hadi", email: "hadi@gmail.com", password: "volten123", role: "branch", branch_id: 1 },
+  { nama: "Mira", username: "mira", email: "mira@gmail.com", password: "volten123", role: "branch", branch_id: 2 },
+  { nama: "Asiana", username: "asiana", email: "asiana@gmail.com", password: "volten123", role: "branch", branch_id: 4 },
+  { nama: "Arini", username: "arini", email: "arini@gmail.com", password: "volten123", role: "branch", branch_id: 3 },
+];
 
 async function seedUsers() {
   try {
-    const users = await generateUsers();
-
     for (const user of users) {
       const hashedPassword = await bcrypt.hash(user.password, 10);
 
@@ -61,7 +32,6 @@ async function seedUsers() {
         email: user.email,
         password: hashedPassword,
         role: user.role,
-        divisi: user.divisi,
         branch_id: user.branch_id,
       });
 

@@ -27,6 +27,7 @@ export async function POST(req) {
         attachment: body.attachment || null,
         created_by: user.id,   // ✅ langsung dari JWT
         divisi: user.divisi,   // ✅ langsung dari JWT
+        divisi_branch: body.divisi_branch || null,
       },
     ])
     .select()

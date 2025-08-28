@@ -357,9 +357,6 @@ const AdminTugas = () => {
                   </Button>
                 </TableHead>
                 <TableHead className="min-w-[180px]">Instruksi</TableHead>
-                <TableHead className="min-w-[220px]">Description</TableHead>
-                <TableHead className="min-w-[160px]">Status</TableHead>
-                <TableHead className="min-w-[140px]">Divisi</TableHead>
                 <TableHead className="min-w-[160px]">
                   <Button
                     variant="ghost"
@@ -369,6 +366,11 @@ const AdminTugas = () => {
                     Created By {renderSortIcon("created_by")}
                   </Button>
                 </TableHead>
+                <TableHead className="min-w-[140px]">Divisi</TableHead>
+
+                <TableHead className="min-w-[220px]">Description</TableHead>
+                <TableHead className="min-w-[160px]">Status</TableHead>
+
                 <TableHead className="min-w-[200px]">Attachment</TableHead>
                 <TableHead className="min-w-[200px]">Remark</TableHead>
                 <TableHead className="min-w-[100px]">Aksi</TableHead>
@@ -383,6 +385,9 @@ const AdminTugas = () => {
                     <TableCell>{item.priority}</TableCell>
                     <TableCell>{item.tanggal}</TableCell>
                     <TableCell>{item.instruction_date}</TableCell>
+                    <TableCell>{item.created_user?.nama || "-"}</TableCell>
+
+                    <TableCell>{item.divisi}</TableCell>
                     <TableCell>{item.description}</TableCell>
 
                     {/* Status */}
@@ -403,9 +408,6 @@ const AdminTugas = () => {
                         item.status
                       )}
                     </TableCell>
-
-                    <TableCell>{item.divisi}</TableCell>
-                    <TableCell>{item.created_user?.nama || "-"}</TableCell>
 
                     {/* ✅ Attachment */}
                     <TableCell>
