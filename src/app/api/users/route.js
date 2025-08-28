@@ -13,6 +13,7 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
+
 export async function POST(req) {
   try {
     const body = await req.json();

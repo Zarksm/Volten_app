@@ -67,10 +67,10 @@ export async function middleware(req) {
         token,
         new TextEncoder().encode(process.env.JWT_SECRET)
       );
-      if (payload.role === "user") {
+      if (payload.role === "user" || payload.role === "branch") {
         return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
       }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(new URL("/admin/tugas", req.url));
     } catch (err) {
       console.error("JWT verify failed:", err);
       return NextResponse.next(); // token invalid → tetap bisa login
@@ -97,10 +97,10 @@ export async function middleware(req) {
 
   // kalau akses root
   if (pathname === "/") {
-    if (role === "user") {
+    if (role === "user" || role === "branch") {
       return NextResponse.redirect(new URL("/dashboard/penugasan", req.url));
     }
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/admin/tugas", req.url));
   }
 
   return NextResponse.next();

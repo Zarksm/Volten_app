@@ -175,7 +175,9 @@ const Sidebar = () => {
       {/* Sidebar List */}
       <nav className="space-y-1">
         <div className="w-full cursor-pointer flex mb-5">
-          <ButtonTugas isCollapsed={isCollapsed} />
+          {user.role === "user" && user.role === "branch" && (
+            <ButtonTugas isCollapsed={isCollapsed} />
+          )}
         </div>
 
         {filteredItems.map((item) => {

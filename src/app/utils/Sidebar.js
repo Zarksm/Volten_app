@@ -45,12 +45,6 @@ const sidebarItems = [
     icon: <AiOutlineTeam />,
     requiredRole: "admin",
   },
-  {
-    name: "Analytics",
-    path: "/admin/analytics",
-    icon: <MdAnalytics />,
-    requiredRole: "admin",
-  },
 ];
 
 export default sidebarItems;
