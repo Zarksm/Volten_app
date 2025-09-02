@@ -1,50 +1,5 @@
-// app/api/tugas/route.js
-
-
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
-import { getUserFromCookie } from "@/lib/getUserFromCookie";
-
-export async function POST(req) {
-  const user = await getUserFromCookie();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await req.json();
-  console.log(">>> Data diterima API:", body);
-
-  const { data, error } = await supabase
-    .from("tugas")
-    .insert([
-      {
-        no: body.no,
-        jenis_tugas: body.jenisTugas,
-        priority: body.priority,
-        tanggal: body.tanggal,
-        instruction_date: body.instructionDate,
-        description: body.description,
-        est_durasi: body.estDurasi,
-        status: body.status,
-        remark: body.remark || null,
-        attachment: body.attachment || null,
-        created_by: user.id,
-        divisi: user.divisi,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("❌ Insert error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  console.log("✅ Data tersimpan:", data);
-  return NextResponse.json(data, { status: 201 });
-}
-
-
 
 export async function GET(req) {
   try {
@@ -52,10 +7,11 @@ export async function GET(req) {
     const sortField = searchParams.get("sortField") || "tanggal";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const createdBy = searchParams.get("created_by")?.toLowerCase() || "";
-    const page = parseInt(searchParams.get("page") || "1", 5);
-    const limit = parseInt(searchParams.get("limit") || "5", 5);
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+
+    const page = searchParams.has("page") ? parseInt(searchParams.get("page")) : null;
+    const limit = searchParams.has("limit") ? parseInt(searchParams.get("limit")) : null;
+    const from = page && limit ? (page - 1) * limit : null;
+    const to = page && limit ? from + limit - 1 : null;
 
     let query = supabase
       .from("tugas")
@@ -76,21 +32,19 @@ export async function GET(req) {
         created_by,
         created_user:tugas_created_by_fkey (id, nama)
       `,
-        { count: "exact" } // 🔥 dapet total count
+        { count: "exact" }
       )
-      .order(sortField, { ascending: sortOrder === "asc" })
-      .range(from, to);
+      .order(sortField, { ascending: sortOrder === "asc" });
+
+    if (from !== null && to !== null) query = query.range(from, to);
 
     const { data, error, count } = await query;
     if (error) throw error;
 
-    // filter manual by nama
     let filtered = data;
-    if (createdBy) {
-      filtered = data.filter((row) =>
-        row.created_user?.nama?.toLowerCase().includes(createdBy)
-      );
-    }
+    if (createdBy) filtered = data.filter((row) =>
+      row.created_user?.nama?.toLowerCase().includes(createdBy)
+    );
 
     return NextResponse.json({ data: filtered, total: count });
   } catch (err) {
@@ -102,42 +56,42 @@ export async function GET(req) {
 
 export async function PATCH(req) {
   try {
-    const formData = await req.formData(); // ✅ ganti ini
+    const formData = await req.formData();
 
     const id = formData.get("id");
     const est_durasi = formData.get("est_durasi");
     const remark = formData.get("remark");
     const status = formData.get("status");
-    const file = formData.get("attachment"); // kalau ada file
+    const file = formData.get("attachment");
 
-    if (!id) {
-      return NextResponse.json({ error: "ID wajib ada" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "ID wajib ada" }, { status: 400 });
 
     let attachmentUrl = null;
-    if (file && typeof file === "object") {
+    if (file && file.size) {
       const fileName = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from("attachments") // pastikan nama bucket sama persis
+        .from("tugas-attachments")
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      const { data: publicUrl } = supabase.storage
-        .from("attachments")
+      const { data } = supabase.storage
+        .from("tugas-attachments")
         .getPublicUrl(fileName);
 
-      attachmentUrl = publicUrl.publicUrl;
+      attachmentUrl = data.publicUrl; // pastikan ini dipakai
     }
+
+    const updateData = {
+      ...(est_durasi ? { est_durasi } : {}),
+      ...(remark !== undefined ? { remark } : {}),
+      ...(status !== undefined ? { status } : {}),
+      ...(attachmentUrl ? { attachment: attachmentUrl } : {}),
+    };
 
     const { data, error } = await supabase
       .from("tugas")
-      .update({
-        ...(est_durasi ? { est_durasi } : {}),
-        ...(remark ? { remark } : {}),
-        ...(status ? { status } : {}),
-        ...(attachmentUrl ? { attachment: attachmentUrl } : {}),
-      })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
@@ -150,4 +104,3 @@ export async function PATCH(req) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-

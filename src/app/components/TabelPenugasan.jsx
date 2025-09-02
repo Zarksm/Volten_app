@@ -29,6 +29,8 @@ const TabelPenugasan = ({ data }) => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
+  const getFileName = (url) => (url ? url.split("/").pop().split("?")[0] : "-");
+
   function capitalize(text) {
     if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
@@ -54,7 +56,6 @@ const TabelPenugasan = ({ data }) => {
         <TableBody>
           {paginatedData.map((item, index) => (
             <TableRow key={index} className="text-xs">
-              {/* nomor urut sesuai halaman */}
               <TableCell className="font-medium">
                 {startIndex + index + 1}
               </TableCell>
@@ -75,7 +76,21 @@ const TabelPenugasan = ({ data }) => {
               <TableCell>{item.est_durasi}</TableCell>
               <TableCell>{item.status}</TableCell>
               <TableCell>{item.remark}</TableCell>
-              <TableCell>{item.attachment || "—"}</TableCell>
+              <TableCell>
+                {item.attachment ? (
+                  <a
+                    href={item.attachment}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline"
+                  >
+                    <p>Lihat file</p>
+                  </a>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+
               <TableCell className="flex gap-2">
                 <div
                   className="cursor-pointer text-lg"
