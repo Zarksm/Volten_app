@@ -104,3 +104,27 @@ export async function PATCH(req) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+
+export async function DELETE(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID wajib ada" }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from("tugas")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ message: "Tugas berhasil dihapus" });
+  } catch (err) {
+    console.error("❌ DELETE Error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
