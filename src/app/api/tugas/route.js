@@ -46,17 +46,38 @@ export async function POST(req) {
 
 
 // GET - ambil data tugas
+// export async function GET() {
+//   const user = await getUserFromCookie();
+//   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+//   const { data, error } = await supabase
+//     .from("tugas")
+//     .select("*")
+//     .eq("divisi", user.divisi)
+//     .order("tanggal", { ascending: false });
+
+//   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+//   return NextResponse.json(data, { status: 200 });
+// }
+
+
 export async function GET() {
   const user = await getUserFromCookie();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { data, error } = await supabase
     .from("tugas")
     .select("*")
-    .eq("divisi", user.divisi)
+    .eq("created_by", user.id) // atau user.email kalau field created_by simpan email
     .order("tanggal", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json(data, { status: 200 });
 }
+
