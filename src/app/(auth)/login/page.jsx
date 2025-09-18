@@ -64,7 +64,9 @@ export default function LoginPage() {
 
       <div className="flex items-center justify-center p-10">
         <div className="w-full max-w-md">
-          <h2 className="text-3xl font-bold mb-6">Login</h2>
+          <h2 className="text-3xl font-bold mb-2">Welcome back!</h2>
+          <p className="mb-6">Login to start your activity.</p>
+
           <form onSubmit={handleLogin} className="space-y-4">
             {error && (
               <div className="bg-red-100 text-red-600 p-2 rounded">{error}</div>

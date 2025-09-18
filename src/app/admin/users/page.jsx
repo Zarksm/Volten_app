@@ -259,7 +259,7 @@ export default function AllUserPages() {
                 <td className="border p-2 space-x-2">
                   <Button
                     size="sm"
-                    onClick={() =>
+                    onClick={() => {
                       setForm({
                         ...u,
                         password: "",
@@ -271,11 +271,13 @@ export default function AllUserPages() {
                         branch_id: u.branch_id || null,
                         divisi: u.divisi || "",
                         subRole: "",
-                      })
-                    }
+                      });
+                      setOpen(true); // ✅ buka dialog otomatis
+                    }}
                   >
                     Edit
                   </Button>
+
                   <Button
                     size="sm"
                     variant="destructive"

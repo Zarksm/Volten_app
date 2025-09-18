@@ -127,6 +127,24 @@
 //     }
 //   };
 
+//   const handleDelete = async (id) => {
+//     if (!confirm("Yakin ingin menghapus tugas ini?")) return;
+
+//     try {
+//       const res = await fetch(`/api/adminTugas?id=${id}`, {
+//         method: "DELETE",
+//       });
+//       const result = await res.json();
+//       if (!res.ok) throw new Error(result.error);
+
+//       toast.success("Tugas berhasil dihapus!");
+//       fetchData(); // refresh table
+//     } catch (err) {
+//       console.error("❌ Gagal hapus:", err.message);
+//       toast.error("Gagal menghapus tugas!");
+//     }
+//   };
+
 //   return (
 //     <div className="flex flex-col w-screen h-screen overflow-hidden">
 //       <Navbar item="All Tugas" />
@@ -268,9 +286,18 @@
 //                           </Button>
 //                         </>
 //                       ) : (
-//                         <Button size="sm" onClick={() => handleEdit(item)}>
-//                           Edit
-//                         </Button>
+//                         <>
+//                           <Button size="sm" onClick={() => handleEdit(item)}>
+//                             Edit
+//                           </Button>
+//                           <Button
+//                             size="sm"
+//                             variant="destructive"
+//                             onClick={() => handleDelete(item.id)}
+//                           >
+//                             Delete
+//                           </Button>
+//                         </>
 //                       )}
 //                     </TableCell>
 //                   </TableRow>
@@ -330,6 +357,8 @@
 
 // export default AdminTugas;
 
+// ========================================================
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -366,7 +395,7 @@ const AdminTugas = () => {
   const [editValues, setEditValues] = useState({});
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(5);
+  const [limit, setLimit] = useState(5); // ✅ default show 10
   const [total, setTotal] = useState(0);
 
   // Fetch data
@@ -394,7 +423,7 @@ const AdminTugas = () => {
 
   useEffect(() => {
     fetchData();
-  }, [sortField, sortOrder, filterUser, page]);
+  }, [sortField, sortOrder, filterUser, page, limit]); // ✅ tambahin limit
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -419,10 +448,10 @@ const AdminTugas = () => {
   const handleEdit = (item) => {
     setEditingId(item.id);
     setEditValues({
-      status: item.status ?? "", // ambil value terakhir
+      status: item.status ?? "",
       remark: item.remark ?? "",
       est_durasi: item.est_durasi ?? "",
-      attachment: null, // untuk upload baru
+      attachment: null,
     });
   };
 
@@ -438,7 +467,7 @@ const AdminTugas = () => {
     formData.append("est_durasi", editValues.est_durasi);
 
     if (editValues.attachment instanceof File) {
-      formData.append("attachment", editValues.attachment); // ✅ attach file
+      formData.append("attachment", editValues.attachment);
     }
 
     try {
@@ -452,7 +481,7 @@ const AdminTugas = () => {
       toast.success("Data tugas berhasil diperbarui!");
       setEditingId(null);
       setEditValues({});
-      fetchData(); // refresh table
+      fetchData();
     } catch (err) {
       console.error("❌ Gagal update:", err.message);
       toast.error("Gagal update tugas!");
@@ -470,21 +499,64 @@ const AdminTugas = () => {
       if (!res.ok) throw new Error(result.error);
 
       toast.success("Tugas berhasil dihapus!");
-      fetchData(); // refresh table
+      fetchData();
     } catch (err) {
       console.error("❌ Gagal hapus:", err.message);
       toast.error("Gagal menghapus tugas!");
     }
   };
 
+  // 🔹 Render pagination dengan ... biar rapi
+  const renderPaginationItems = () => {
+    const pages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (page <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages);
+      } else if (page >= totalPages - 2) {
+        pages.push(
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages
+        );
+      } else {
+        pages.push(1, "...", page - 1, page, page + 1, "...", totalPages);
+      }
+    }
+    return pages.map((p, idx) =>
+      p === "..." ? (
+        <PaginationItem
+          key={`dots-${idx}`}
+          className="pointer-events-none opacity-50"
+        >
+          ...
+        </PaginationItem>
+      ) : (
+        <PaginationItem key={`page-${p}-${idx}`}>
+          <PaginationLink isActive={page === p} onClick={() => setPage(p)}>
+            {p}
+          </PaginationLink>
+        </PaginationItem>
+      )
+    );
+  };
+
   return (
-    <div className="flex flex-col w-screen h-screen overflow-hidden">
+    <div className="flex flex-col w-screen h-screen overflow-x-scroll">
       <Navbar item="All Tugas" />
       <div className="p-6">
         <h1 className="text-xl font-bold mb-4">📋 Daftar Semua Tugas</h1>
 
         {/* Filter */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-4 mb-4">
           <Input
             placeholder="Filter by Created By"
             value={filterUser}
@@ -493,6 +565,21 @@ const AdminTugas = () => {
               setPage(1);
             }}
           />
+
+          {/* Dropdown jumlah data */}
+          <select
+            value={limit}
+            onChange={(e) => {
+              setLimit(Number(e.target.value));
+              setPage(1);
+            }}
+            className="border rounded px-2 py-1"
+          >
+            <option value={5}>Show 5</option>
+            <option value={10}>Show 10</option>
+            <option value={30}>Show 30</option>
+            <option value={50}>Show 50</option>
+          </select>
         </div>
 
         {/* Table */}
@@ -553,9 +640,9 @@ const AdminTugas = () => {
                           }
                           className="border rounded px-2 py-1"
                         >
-                          <option value="revisi">Revisi</option>
-                          <option value="onprogress">On Progress</option>
-                          <option value="closed">Closed</option>
+                          <option value="Revisi">Revisi</option>
+                          <option value="On Progress">On Progress</option>
+                          <option value="Closed">Closed</option>
                         </select>
                       ) : (
                         item.status
@@ -659,16 +746,7 @@ const AdminTugas = () => {
                 />
               </PaginationItem>
 
-              {[...Array(totalPages)].map((_, idx) => (
-                <PaginationItem key={idx}>
-                  <PaginationLink
-                    isActive={page === idx + 1}
-                    onClick={() => setPage(idx + 1)}
-                  >
-                    {idx + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {renderPaginationItems()}
 
               <PaginationItem>
                 <PaginationNext
