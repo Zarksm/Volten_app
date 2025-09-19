@@ -11,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function UserDetailPage() {
@@ -114,8 +113,8 @@ export default function UserDetailPage() {
   if (!user) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="p-6 space-y-6 w-full overflow-x-hidden overflow-y-auto">
-      {/* 🔹 Detail User */}
+    <div className="p-6 space-y-6 w-full h-screen flex flex-col overflow-hidden">
+      {/* 🔹 Tombol Kembali */}
       <div>
         <Button
           variant="outline"
@@ -125,32 +124,33 @@ export default function UserDetailPage() {
           ← Kembali
         </Button>
       </div>
-      <div className="flex items-center">
-        <h1 className="text-2xl font-bold">Detail User</h1>
-      </div>
 
-      <div className="space-y-1">
-        <p>
-          <b>Username:</b> {user.username}
-        </p>
-        <p>
-          <b>Nama:</b> {user.nama}
-        </p>
-        <p>
-          <b>Email:</b> {user.email}
-        </p>
-        <p>
-          <b>Role:</b> {user.role}
-        </p>
-        <p>
-          <b>Divisi:</b> {user.divisi}
-        </p>
+      {/* 🔹 Detail User */}
+      <div>
+        <h1 className="text-2xl font-bold mb-2">Detail User</h1>
+        <div className="space-y-1">
+          <p>
+            <b>Username:</b> {user.username}
+          </p>
+          <p>
+            <b>Nama:</b> {user.nama}
+          </p>
+          <p>
+            <b>Email:</b> {user.email}
+          </p>
+          <p>
+            <b>Role:</b> {user.role}
+          </p>
+          <p>
+            <b>Divisi:</b> {user.divisi}
+          </p>
+        </div>
       </div>
 
       {/* 🔹 Tabel Tugas */}
-      <div>
+      <div className="flex-1 flex flex-col overflow-hidden">
         <h2 className="text-xl font-semibold mb-3">List Tugas yang Dibuat</h2>
-        <div className="overflow-x-auto">
+        <div className="flex-1 overflow-x-auto overflow-y-auto border rounded-lg">
           <Table className="min-w-[1100px]">
             <TableHeader>
               <TableRow>
@@ -289,6 +289,8 @@ export default function UserDetailPage() {
           </Table>
         </div>
       </div>
+
+      {/* 🔹 Toast */}
       <ToastContainer position="top-right" autoClose={1000} />
     </div>
   );
