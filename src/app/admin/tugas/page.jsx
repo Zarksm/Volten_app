@@ -34,7 +34,7 @@
 //   const [editValues, setEditValues] = useState({});
 
 //   const [page, setPage] = useState(1);
-//   const [limit] = useState(5);
+//   const [limit, setLimit] = useState(5); // ✅ default show 10
 //   const [total, setTotal] = useState(0);
 
 //   // Fetch data
@@ -62,7 +62,7 @@
 
 //   useEffect(() => {
 //     fetchData();
-//   }, [sortField, sortOrder, filterUser, page]);
+//   }, [sortField, sortOrder, filterUser, page, limit]); // ✅ tambahin limit
 
 //   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -87,10 +87,10 @@
 //   const handleEdit = (item) => {
 //     setEditingId(item.id);
 //     setEditValues({
-//       status: item.status ?? "", // ambil value terakhir
+//       status: item.status ?? "",
 //       remark: item.remark ?? "",
 //       est_durasi: item.est_durasi ?? "",
-//       attachment: null, // untuk upload baru
+//       attachment: null,
 //     });
 //   };
 
@@ -106,7 +106,7 @@
 //     formData.append("est_durasi", editValues.est_durasi);
 
 //     if (editValues.attachment instanceof File) {
-//       formData.append("attachment", editValues.attachment); // ✅ attach file
+//       formData.append("attachment", editValues.attachment);
 //     }
 
 //     try {
@@ -120,7 +120,7 @@
 //       toast.success("Data tugas berhasil diperbarui!");
 //       setEditingId(null);
 //       setEditValues({});
-//       fetchData(); // refresh table
+//       fetchData();
 //     } catch (err) {
 //       console.error("❌ Gagal update:", err.message);
 //       toast.error("Gagal update tugas!");
@@ -138,21 +138,64 @@
 //       if (!res.ok) throw new Error(result.error);
 
 //       toast.success("Tugas berhasil dihapus!");
-//       fetchData(); // refresh table
+//       fetchData();
 //     } catch (err) {
 //       console.error("❌ Gagal hapus:", err.message);
 //       toast.error("Gagal menghapus tugas!");
 //     }
 //   };
 
+//   // 🔹 Render pagination dengan ... biar rapi
+//   const renderPaginationItems = () => {
+//     const pages = [];
+//     const maxVisible = 5;
+
+//     if (totalPages <= maxVisible) {
+//       for (let i = 1; i <= totalPages; i++) {
+//         pages.push(i);
+//       }
+//     } else {
+//       if (page <= 3) {
+//         pages.push(1, 2, 3, 4, "...", totalPages);
+//       } else if (page >= totalPages - 2) {
+//         pages.push(
+//           1,
+//           "...",
+//           totalPages - 3,
+//           totalPages - 2,
+//           totalPages - 1,
+//           totalPages
+//         );
+//       } else {
+//         pages.push(1, "...", page - 1, page, page + 1, "...", totalPages);
+//       }
+//     }
+//     return pages.map((p, idx) =>
+//       p === "..." ? (
+//         <PaginationItem
+//           key={`dots-${idx}`}
+//           className="pointer-events-none opacity-50"
+//         >
+//           ...
+//         </PaginationItem>
+//       ) : (
+//         <PaginationItem key={`page-${p}-${idx}`}>
+//           <PaginationLink isActive={page === p} onClick={() => setPage(p)}>
+//             {p}
+//           </PaginationLink>
+//         </PaginationItem>
+//       )
+//     );
+//   };
+
 //   return (
-//     <div className="flex flex-col w-screen h-screen overflow-hidden">
+//     <div className="flex flex-col w-screen h-screen overflow-x-scroll">
 //       <Navbar item="All Tugas" />
 //       <div className="p-6">
 //         <h1 className="text-xl font-bold mb-4">📋 Daftar Semua Tugas</h1>
 
 //         {/* Filter */}
-//         <div className="flex items-center gap-2 mb-4">
+//         <div className="flex items-center gap-4 mb-4">
 //           <Input
 //             placeholder="Filter by Created By"
 //             value={filterUser}
@@ -161,6 +204,21 @@
 //               setPage(1);
 //             }}
 //           />
+
+//           {/* Dropdown jumlah data */}
+//           <select
+//             value={limit}
+//             onChange={(e) => {
+//               setLimit(Number(e.target.value));
+//               setPage(1);
+//             }}
+//             className="border rounded px-2 py-1"
+//           >
+//             <option value={5}>Show 5</option>
+//             <option value={10}>Show 10</option>
+//             <option value={30}>Show 30</option>
+//             <option value={50}>Show 50</option>
+//           </select>
 //         </div>
 
 //         {/* Table */}
@@ -221,9 +279,9 @@
 //                           }
 //                           className="border rounded px-2 py-1"
 //                         >
-//                           <option value="revisi">Revisi</option>
-//                           <option value="onprogress">On Progress</option>
-//                           <option value="closed">Closed</option>
+//                           <option value="Revisi">Revisi</option>
+//                           <option value="On Progress">On Progress</option>
+//                           <option value="Closed">Closed</option>
 //                         </select>
 //                       ) : (
 //                         item.status
@@ -327,16 +385,7 @@
 //                 />
 //               </PaginationItem>
 
-//               {[...Array(totalPages)].map((_, idx) => (
-//                 <PaginationItem key={idx}>
-//                   <PaginationLink
-//                     isActive={page === idx + 1}
-//                     onClick={() => setPage(idx + 1)}
-//                   >
-//                     {idx + 1}
-//                   </PaginationLink>
-//                 </PaginationItem>
-//               ))}
+//               {renderPaginationItems()}
 
 //               <PaginationItem>
 //                 <PaginationNext
@@ -356,8 +405,6 @@
 // };
 
 // export default AdminTugas;
-
-// ========================================================
 
 "use client";
 
@@ -390,13 +437,25 @@ const AdminTugas = () => {
   const [data, setData] = useState([]);
   const [sortField, setSortField] = useState("tanggal");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [filterUser, setFilterUser] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
 
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5); // ✅ default show 10
+  const [limit, setLimit] = useState(5);
   const [total, setTotal] = useState(0);
+
+  const [filterUser, setFilterUser] = useState("");
+  const [filterJenis, setFilterJenis] = useState("");
+
+  // 🔹 Reset pagination kalau ada filter
+  useEffect(() => {
+    if (filterUser || filterJenis) {
+      setPage(1);
+      setLimit(total || 1000); // tampilkan semua hasil filter
+    } else {
+      setLimit(5); // default
+    }
+  }, [filterUser, filterJenis, total]);
 
   // Fetch data
   const fetchData = async () => {
@@ -407,6 +466,7 @@ const AdminTugas = () => {
         page,
         limit,
         ...(filterUser ? { created_by: filterUser } : {}),
+        ...(filterJenis ? { jenis_tugas: filterJenis } : {}),
       });
 
       const res = await fetch(`/api/adminTugas?${query.toString()}`);
@@ -423,7 +483,7 @@ const AdminTugas = () => {
 
   useEffect(() => {
     fetchData();
-  }, [sortField, sortOrder, filterUser, page, limit]); // ✅ tambahin limit
+  }, [sortField, sortOrder, page, limit, filterUser, filterJenis]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -506,7 +566,6 @@ const AdminTugas = () => {
     }
   };
 
-  // 🔹 Render pagination dengan ... biar rapi
   const renderPaginationItems = () => {
     const pages = [];
     const maxVisible = 5;
@@ -560,26 +619,35 @@ const AdminTugas = () => {
           <Input
             placeholder="Filter by Created By"
             value={filterUser}
-            onChange={(e) => {
-              setFilterUser(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => setFilterUser(e.target.value)}
           />
 
-          {/* Dropdown jumlah data */}
           <select
-            value={limit}
-            onChange={(e) => {
-              setLimit(Number(e.target.value));
-              setPage(1);
-            }}
+            value={filterJenis}
+            onChange={(e) => setFilterJenis(e.target.value)}
             className="border rounded px-2 py-1"
           >
-            <option value={5}>Show 5</option>
-            <option value={10}>Show 10</option>
-            <option value={30}>Show 30</option>
-            <option value={50}>Show 50</option>
+            <option value="">Semua Jenis</option>
+            <option value="Penugasan">Penugasan</option>
+            <option value="Rutinan">Rutinan</option>
+            <option value="Reguler">Reguler</option>
           </select>
+
+          {!filterUser && !filterJenis && (
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              className="border rounded px-2 py-1"
+            >
+              <option value={5}>Show 5</option>
+              <option value={10}>Show 10</option>
+              <option value={30}>Show 30</option>
+              <option value={50}>Show 50</option>
+            </select>
+          )}
         </div>
 
         {/* Table */}
@@ -619,9 +687,9 @@ const AdminTugas = () => {
             </TableHeader>
             <TableBody>
               {data.length > 0 ? (
-                data.map((item) => (
+                data.map((item, idx) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.no}</TableCell>
+                    <TableCell>{idx + 1}</TableCell>
                     <TableCell>{item.jenis_tugas}</TableCell>
                     <TableCell>{item.priority}</TableCell>
                     <TableCell>{item.tanggal}</TableCell>
@@ -732,33 +800,40 @@ const AdminTugas = () => {
           </Table>
         </div>
 
-        {/* Pagination */}
-        <div className="mt-4 flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </p>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
+        {/* Pagination hanya tampil jika tanpa filter */}
+        {!filterUser && !filterJenis && (
+          <div className="mt-4 flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              Page {page} of {totalPages}
+            </p>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className={
+                      page === 1 ? "pointer-events-none opacity-50" : ""
+                    }
+                  />
+                </PaginationItem>
 
-              {renderPaginationItems()}
+                {renderPaginationItems()}
 
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className={
-                    page === totalPages ? "pointer-events-none opacity-50" : ""
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className={
+                      page === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         <ToastContainer position="top-right" autoClose={1000} />
       </div>
     </div>
