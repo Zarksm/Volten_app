@@ -169,7 +169,7 @@ export default function UserDetailPage() {
       </div>
 
       {/* 🔹 Detail User */}
-      <div className="relative border py-6 px-6 rounded-md shadow-sm bg-white max-w-md">
+      <div className="relative border py-6 px-6 rounded-md bg-white max-w-md">
         {/* Tombol Edit */}
         {!isEditingUser && (
           <div className="absolute top-4 right-4">
@@ -248,13 +248,13 @@ export default function UserDetailPage() {
           </div>
         ) : (
           <div className="space-y-1">
-            <p>
+            <p className="hidden">
               <b>Username:</b> {user.username}
             </p>
             <p>
               <b>Nama:</b> {user.nama}
             </p>
-            <p>
+            <p className="hidden">
               <b>Email:</b> {user.email}
             </p>
           </div>
