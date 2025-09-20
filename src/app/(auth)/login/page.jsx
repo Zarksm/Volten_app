@@ -57,7 +57,7 @@ export default function LoginPage() {
             />
           </div>
           <h2 className="text-white font-bold text-2xl uppercase">
-            Voltenindonesia
+            Volten indonesia
           </h2>
         </div>
       </div>

@@ -48,7 +48,7 @@ const Sidebar = () => {
     <div
       className={`${
         isCollapsed ? "w-[70px]" : "w-[230px] min-w-[230px]"
-      } h-screen bg-slate-200 py-3 px-3 transition-all duration-300 flex flex-col`}
+      } h-auto bg-slate-200 py-3 px-3 transition-all duration-300 flex flex-col`}
     >
       {/* Header + Collapse */}
       <div

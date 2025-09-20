@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="icon" href="/images/icon.ico" sizes="any" />
       </head>
-      <body >
+      <body className="font-roboto-condensed">
         {children}
       </body>
     </html>

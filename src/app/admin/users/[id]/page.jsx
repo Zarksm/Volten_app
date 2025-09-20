@@ -14,6 +14,15 @@ import { Button } from "@/components/ui/button";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// 🔹 Tambahan import untuk edit user
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Edit3, Save, X } from "lucide-react";
+
 export default function UserDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -26,13 +35,28 @@ export default function UserDetailPage() {
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({ status: "", remark: "" });
 
+  // 🔹 State untuk edit user
+  const [isEditingUser, setIsEditingUser] = useState(false);
+  const [userForm, setUserForm] = useState({
+    username: "",
+    nama: "",
+    email: "",
+  });
+
   // 🔹 Fetch user
   useEffect(() => {
     if (!id) return;
     const fetchUser = async () => {
       const res = await fetch(`/api/adminUsers/${id}`);
       const data = await res.json();
-      if (res.ok) setUser(data);
+      if (res.ok) {
+        setUser(data);
+        setUserForm({
+          username: data.username,
+          nama: data.nama,
+          email: data.email,
+        });
+      }
     };
     fetchUser();
   }, [id]);
@@ -110,6 +134,25 @@ export default function UserDetailPage() {
     }
   };
 
+  // 🔹 Save user edit
+  const handleSaveUser = async () => {
+    try {
+      const res = await fetch(`/api/adminUsers/edit/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userForm),
+      });
+      if (!res.ok) throw new Error("Gagal update user");
+
+      const updated = await res.json();
+      setUser(updated);
+      toast.success("✅ User berhasil diperbarui");
+      setIsEditingUser(false);
+    } catch (err) {
+      toast.error("❌ " + err.message);
+    }
+  };
+
   if (!user) return <div className="p-6">Loading...</div>;
 
   return (
@@ -126,25 +169,96 @@ export default function UserDetailPage() {
       </div>
 
       {/* 🔹 Detail User */}
-      <div>
-        <h1 className="text-2xl font-bold mb-2">Detail User</h1>
-        <div className="space-y-1">
-          <p>
-            <b>Username:</b> {user.username}
-          </p>
-          <p>
-            <b>Nama:</b> {user.nama}
-          </p>
-          <p>
-            <b>Email:</b> {user.email}
-          </p>
-          <p>
-            <b>Role:</b> {user.role}
-          </p>
-          <p>
-            <b>Divisi:</b> {user.divisi}
-          </p>
-        </div>
+      <div className="relative border py-6 px-6 rounded-md shadow-sm bg-white max-w-md">
+        {/* Tombol Edit */}
+        {!isEditingUser && (
+          <div className="absolute top-4 right-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-gray-100"
+                    onClick={() => setIsEditingUser(true)}
+                  >
+                    <Edit3 className="h-5 w-5 text-gray-600" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p>Edit User</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+
+        <h1 className="text-2xl font-bold mb-4">Detail User</h1>
+
+        {isEditingUser ? (
+          <div className="space-y-3">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">Username</label>
+              <input
+                type="text"
+                value={userForm.username}
+                onChange={(e) =>
+                  setUserForm({ ...userForm, username: e.target.value })
+                }
+                className="border rounded-md px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">Nama</label>
+              <input
+                type="text"
+                value={userForm.nama}
+                onChange={(e) =>
+                  setUserForm({ ...userForm, nama: e.target.value })
+                }
+                className="border rounded-md px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">Email</label>
+              <input
+                type="email"
+                value={userForm.email}
+                onChange={(e) =>
+                  setUserForm({ ...userForm, email: e.target.value })
+                }
+                className="border rounded-md px-3 py-2 mt-1 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button
+                onClick={handleSaveUser}
+                className="flex items-center gap-1"
+              >
+                <Save className="h-4 w-4" /> Save
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditingUser(false)}
+                className="flex items-center gap-1"
+              >
+                <X className="h-4 w-4" /> Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <p>
+              <b>Username:</b> {user.username}
+            </p>
+            <p>
+              <b>Nama:</b> {user.nama}
+            </p>
+            <p>
+              <b>Email:</b> {user.email}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 🔹 Tabel Tugas */}
