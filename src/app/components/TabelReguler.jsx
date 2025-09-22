@@ -368,7 +368,7 @@ const TabelReguler = ({ data }) => {
 
   return (
     <div className="w-full text-xs">
-      <div className="max-h-[30rem] overflow-y-auto border rounded-md">
+      <div className="max-h-[25rem] overflow-y-auto border rounded-md">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-white">
             <TableRow>

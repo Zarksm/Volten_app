@@ -279,7 +279,7 @@ const TabelPenugasan = ({ data }) => {
 
   return (
     <div className="w-full text-xs">
-      <div className="max-h-[30rem] overflow-y-auto border rounded-md">
+      <div className="max-h-[25rem] overflow-y-auto border rounded-md">
         <Table>
           <TableHeader>
             <TableRow>
