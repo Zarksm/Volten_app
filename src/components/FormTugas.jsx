@@ -303,14 +303,14 @@ const FormTugas = ({ onSubmit }) => {
         </div>
 
         {/* Attachment */}
-        <div className="space-y-2">
+        <div className="space-y-2 hidden">
           <Label htmlFor="attachment">Attachment (opsional)</Label>
           <Input
             id="attachment"
             name="attachment"
             type="file"
             onChange={handleChange}
-            className="!shadow-none"
+            className="!shadow-none "
           />
         </div>
 

@@ -357,7 +357,7 @@ const TabelPenugasan = ({ data }) => {
                       onChange={(e) =>
                         handleChange("attachment", e.target.files[0])
                       }
-                      className="border p-1 w-full"
+                      className="border p-1 w-full hidden"
                     />
                   ) : item.attachment ? (
                     <a

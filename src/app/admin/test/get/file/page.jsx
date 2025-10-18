@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -13,6 +13,29 @@ const GetFileAttachment = () => {
   const [deleting, setDeleting] = useState("");
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [usage, setUsage] = useState(null);
+  const MAX_LIMIT = 500 * 1024 * 1024;
+
+  const fetchStorageUsage = async (path = "") => {
+    const { data, error } = await supabase.storage
+      .from("tugas-attachments")
+      .list(path, { limit: 1000 });
+    if (error || !data) return 0;
+    let total = 0;
+    for (const item of data) {
+      if (item.metadata?.size) total += item.metadata.size;
+      if (item.id && item.name && item.metadata === null) {
+        total += await fetchStorageUsage(`${path}${item.name}/`);
+      }
+    }
+    return total;
+  };
+  useEffect(() => {
+    (async () => {
+      const total = await fetchStorageUsage("");
+      setUsage(total);
+    })();
+  }, []);
 
   // Ambil file berdasarkan tanggal
   const getFilesByDate = async () => {
@@ -165,168 +188,186 @@ const GetFileAttachment = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto h-screen flex flex-col">
-      <h1 className="text-xl font-semibold mb-4 text-center">
-        File Arsip Berdasarkan Tanggal Upload
-      </h1>
+    <>
+      <div className="p-6 max-w-6xl mx-auto h-screen flex flex-col">
+        <h1 className="text-xl font-semibold mb-4 text-center">
+          File Arsip Berdasarkan Tanggal Upload
+        </h1>
 
-      {/* Input tanggal */}
-      <div className="flex items-center gap-2 mb-4 justify-center">
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="border px-3 py-2 rounded-md"
-        />
-        <button
-          onClick={getFilesByDate}
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Loading..." : "Tampilkan"}
-        </button>
-      </div>
+        {usage !== null && (
+          <div className="text-center mb-2 text-sm">
+            Storage usage: {(usage / 1024 / 1024).toFixed(2)} MB
+          </div>
+        )}
+        {usage > MAX_LIMIT * 0.9 && (
+          <div className="text-red-600 text-center mb-2 text-xs font-semibold">
+            Storage penuh! Segera backup file data atau sistem akan error! (
+            {(usage / 1024 / 1024).toFixed(1)} MB /{" "}
+            {(MAX_LIMIT / 1024 / 1024).toFixed(0)} MB)
+          </div>
+        )}
+        {/* Input tanggal */}
+        <div className="flex items-center gap-2 mb-4 justify-center">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border px-3 py-2 rounded-md"
+          />
+          <button
+            onClick={getFilesByDate}
+            disabled={loading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? "Loading..." : "Tampilkan"}
+          </button>
+        </div>
 
-      {/* Dua kolom */}
-      <div className="flex-1 border rounded-md flex overflow-hidden shadow-sm">
-        {/* KIRI */}
-        <div className="w-1/2 border-r p-4 bg-gray-50 overflow-y-auto">
-          {files.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center">
-              Belum ada file ditampilkan
-            </p>
-          ) : (
-            <>
-              <ul className="space-y-3">
-                {files.map((file) => (
-                  <li
-                    key={file.name}
-                    onClick={() =>
-                      isPreviewable(file.name) && previewFileHandler(file)
-                    }
-                    className={`p-2 border rounded-md cursor-pointer hover:bg-gray-100 ${
-                      previewFile?.name === file.name
-                        ? "bg-blue-50 border-blue-400"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{file.name}</span>
-                        <span className="text-xs text-gray-500">
-                          {new Date(
-                            file.created_at || file.updated_at
-                          ).toLocaleString()}
-                        </span>
+        {/* Dua kolom */}
+        <div className="flex-1 border rounded-md flex overflow-hidden shadow-sm">
+          {/* KIRI */}
+          <div className="w-1/2 border-r p-4 bg-gray-50 overflow-y-auto">
+            {files.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center">
+                Belum ada file ditampilkan
+              </p>
+            ) : (
+              <>
+                <ul className="space-y-3">
+                  {files.map((file) => (
+                    <li
+                      key={file.name}
+                      onClick={() =>
+                        isPreviewable(file.name) && previewFileHandler(file)
+                      }
+                      className={`p-2 border rounded-md cursor-pointer hover:bg-gray-100 ${
+                        previewFile?.name === file.name
+                          ? "bg-blue-50 border-blue-400"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {file.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(
+                              file.created_at || file.updated_at
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadFile(file.name);
+                            }}
+                            disabled={downloading === file.name}
+                            className="text-blue-600 hover:underline text-xs"
+                          >
+                            {downloading === file.name ? "..." : "Download"}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteFile(file.name);
+                            }}
+                            disabled={deleting === file.name}
+                            className="text-red-600 hover:underline text-xs"
+                          >
+                            {deleting === file.name ? "..." : "Hapus"}
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadFile(file.name);
-                          }}
-                          disabled={downloading === file.name}
-                          className="text-blue-600 hover:underline text-xs"
-                        >
-                          {downloading === file.name ? "..." : "Download"}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteFile(file.name);
-                          }}
-                          disabled={deleting === file.name}
-                          className="text-red-600 hover:underline text-xs"
-                        >
-                          {deleting === file.name ? "..." : "Hapus"}
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
 
-              {files.length > 0 && (
-                <div className="mt-4 flex flex-col items-center gap-2">
+                {files.length > 0 && (
+                  <div className="mt-4 flex flex-col items-center gap-2">
+                    <button
+                      onClick={downloadAllAsZip}
+                      disabled={downloading === "ALL"}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 w-full"
+                    >
+                      {downloading === "ALL"
+                        ? "Mengemas ZIP..."
+                        : "Download Semua (ZIP)"}
+                    </button>
+
+                    <button
+                      onClick={deleteAllFiles}
+                      disabled={deleting === "ALL"}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 w-full"
+                    >
+                      {deleting === "ALL"
+                        ? "Menghapus Semua..."
+                        : "Hapus Semua File"}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* KANAN */}
+          <div className="w-1/2 p-4 flex flex-col items-center justify-start bg-white overflow-auto">
+            {!previewFile ? (
+              <p className="text-gray-500 italic text-sm mt-20">
+                Pilih file di kiri untuk melihat preview 👈
+              </p>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold mb-2">
+                  {previewFile.name}
+                </h2>
+                <div
+                  className="border rounded-md bg-gray-100 flex justify-center items-center"
+                  style={{
+                    width: "100%",
+                    height: "500px",
+                  }}
+                >
+                  {previewUrl ? (
+                    previewFile.name.endsWith(".pdf") ? (
+                      <iframe
+                        src={previewUrl}
+                        className="w-full h-full"
+                        title="PDF Preview"
+                      ></iframe>
+                    ) : (
+                      <img
+                        src={previewUrl}
+                        alt="preview"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    )
+                  ) : (
+                    <p>Memuat preview...</p>
+                  )}
+                </div>
+
+                <div className="flex gap-2 mt-3">
                   <button
-                    onClick={downloadAllAsZip}
-                    disabled={downloading === "ALL"}
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 w-full"
+                    onClick={() => downloadFile(previewFile.name)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
                   >
-                    {downloading === "ALL"
-                      ? "Mengemas ZIP..."
-                      : "Download Semua (ZIP)"}
+                    Download
                   </button>
-
                   <button
-                    onClick={deleteAllFiles}
-                    disabled={deleting === "ALL"}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 w-full"
+                    onClick={() => deleteFile(previewFile.name)}
+                    className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
                   >
-                    {deleting === "ALL"
-                      ? "Menghapus Semua..."
-                      : "Hapus Semua File"}
+                    Hapus
                   </button>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* KANAN */}
-        <div className="w-1/2 p-4 flex flex-col items-center justify-start bg-white overflow-auto">
-          {!previewFile ? (
-            <p className="text-gray-500 italic text-sm mt-20">
-              Pilih file di kiri untuk melihat preview 👈
-            </p>
-          ) : (
-            <>
-              <h2 className="text-lg font-semibold mb-2">{previewFile.name}</h2>
-              <div
-                className="border rounded-md bg-gray-100 flex justify-center items-center"
-                style={{
-                  width: "100%",
-                  height: "500px",
-                }}
-              >
-                {previewUrl ? (
-                  previewFile.name.endsWith(".pdf") ? (
-                    <iframe
-                      src={previewUrl}
-                      className="w-full h-full"
-                      title="PDF Preview"
-                    ></iframe>
-                  ) : (
-                    <img
-                      src={previewUrl}
-                      alt="preview"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  )
-                ) : (
-                  <p>Memuat preview...</p>
-                )}
-              </div>
-
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => downloadFile(previewFile.name)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
-                >
-                  Download
-                </button>
-                <button
-                  onClick={() => deleteFile(previewFile.name)}
-                  className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700"
-                >
-                  Hapus
-                </button>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
