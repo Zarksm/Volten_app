@@ -179,7 +179,7 @@ export default function UserDetailPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-gray-100"
+                    className="hover:bg-gray-100 cursor-pointer"
                     onClick={() => setIsEditingUser(true)}
                   >
                     <Edit3 className="h-5 w-5 text-gray-600" />
@@ -328,7 +328,7 @@ export default function UserDetailPage() {
                           onChange={(e) =>
                             handleChange("attachment", e.target.files[0])
                           }
-                          className="border p-1 w-full hidden"
+                          className="border p-1 w-full"
                         />
                       ) : item.attachment ? (
                         <a

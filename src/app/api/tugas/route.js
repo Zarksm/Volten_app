@@ -23,7 +23,7 @@ export async function POST(req) {
           est_durasi: body.estDurasi,
           status: body.status,
           remark: body.remark || null,
-          attachment: body.attachment || null, // 🔹 HARUS string URL dari client
+          attachment: body.attachment || null,
           created_by: user.id,
           divisi: user.divisi,
           divisi_branch: body.divisi_branch || null,

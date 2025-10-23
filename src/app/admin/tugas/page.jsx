@@ -317,7 +317,7 @@ const AdminTugas = () => {
                           onChange={(e) =>
                             handleChange("attachment", e.target.files[0])
                           }
-                          className="border p-1 w-full hidden"
+                          className="border p-1 w-full"
                         />
                       ) : item.attachment ? (
                         <a
@@ -404,12 +404,16 @@ const AdminTugas = () => {
                   <PaginationPrevious
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     className={
-                      page === 1 ? "pointer-events-none opacity-50" : ""
+                      page === 1
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
                     }
                   />
                 </PaginationItem>
 
-                {renderPaginationItems()}
+                <span className="cursor-pointer flex">
+                  {renderPaginationItems()}
+                </span>
 
                 <PaginationItem>
                   <PaginationNext
@@ -417,7 +421,7 @@ const AdminTugas = () => {
                     className={
                       page === totalPages
                         ? "pointer-events-none opacity-50"
-                        : ""
+                        : "cursor-pointer"
                     }
                   />
                 </PaginationItem>

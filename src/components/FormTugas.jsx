@@ -85,7 +85,36 @@ const FormTugas = ({ onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi tetap sama
+    // VALIDASI SIZE ATTACHMENT
+    if (form.attachment) {
+      const file = form.attachment;
+      const fileType = file.type;
+      const fileSize = file.size;
+
+      const maxImageSize = 2 * 1024 * 1024; // 2 MB
+      const maxVideoSize = 5 * 1024 * 1024; // 5 MB
+
+      // CEK IMAGE (2 MB)
+      if (fileType.startsWith("image/") && fileSize > maxImageSize) {
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "Ukuran gambar maksimal 2 MB!",
+        }));
+        return;
+      }
+
+      // CEK VIDEO (5 MB)
+      if (fileType.startsWith("video/") && fileSize > maxVideoSize) {
+        setErrors((prev) => ({
+          ...prev,
+          attachment: "Ukuran video maksimal 5 MB!",
+        }));
+        return;
+      }
+
+      // PDF & WORD → SKIP VALIDASI SIZE
+    }
+
     const newErrors = {};
     for (const key in form) {
       if (["attachment", "remark", "divisi_branch"].includes(key)) continue;
@@ -96,6 +125,18 @@ const FormTugas = ({ onSubmit }) => {
       setErrors(newErrors);
       return;
     }
+
+    // Validasi tetap sama
+    // const newErrors = {};
+    // for (const key in form) {
+    //   if (["attachment", "remark", "divisi_branch"].includes(key)) continue;
+    //   if (form[key].toString().trim() === "")
+    //     newErrors[key] = "Field ini tidak boleh kosong";
+    // }
+    // if (Object.keys(newErrors).length > 0) {
+    //   setErrors(newErrors);
+    //   return;
+    // }
 
     let attachmentUrl = null;
 
@@ -113,7 +154,7 @@ const FormTugas = ({ onSubmit }) => {
         .from("tugas-attachments")
         .getPublicUrl(fileName);
 
-      attachmentUrl = data.publicUrl; // ✅ HARUS pakai attachmentUrl
+      attachmentUrl = data.publicUrl;
     }
 
     // Kirim ke API
@@ -303,8 +344,13 @@ const FormTugas = ({ onSubmit }) => {
         </div>
 
         {/* Attachment */}
-        <div className="space-y-2 hidden">
-          <Label htmlFor="attachment">Attachment (opsional)</Label>
+        <div className="space-y-2">
+          <Label htmlFor="attachment">
+            Attachment (opsional)
+            {/* <span className="text-red-300 text-[10px] italic">
+              *Max size 5mb!
+            </span> */}
+          </Label>
           <Input
             id="attachment"
             name="attachment"
@@ -312,6 +358,9 @@ const FormTugas = ({ onSubmit }) => {
             onChange={handleChange}
             className="!shadow-none "
           />
+          {errors.attachment && (
+            <p className="text-red-500 text-sm">{errors.attachment}</p>
+          )}
         </div>
 
         {/* Submit Button */}

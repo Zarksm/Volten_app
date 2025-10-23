@@ -42,12 +42,6 @@ const sidebarItems = [
     requiredRole: "admin",
   },
   {
-    name: "Divisi / Tim",
-    path: "/admin/divisi",
-    icon: <AiOutlineTeam />,
-    requiredRole: "admin",
-  },
-    {
     name: "Arsip File",
     path: "/admin/test/get/file",
     icon: <IoMdArchive />,

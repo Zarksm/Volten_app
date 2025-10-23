@@ -43,7 +43,7 @@ export async function getUserFromCookie() {
     );
 
     console.log("DEBUG JWT Payload:", payload);
-    return payload; // { id, nama, divisi, email, role, ... }
+    return payload;
   } catch (err) {
     console.error("JWT verify failed:", err);
     return null;
