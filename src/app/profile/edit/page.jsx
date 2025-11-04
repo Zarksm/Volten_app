@@ -18,7 +18,7 @@ export default async function EditPage() {
   return (
     <div className="flex h-screen">
       {/* Sidebar kiri */}
-      <aside className="w-64 border-r bg-gray-100">
+      <aside className="w-64 border-r">
         <Sidebar />
       </aside>
 
